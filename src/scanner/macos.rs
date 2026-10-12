@@ -291,9 +291,9 @@ fn obtain_task_port(pid: libc::pid_t, signature: SignatureKind) -> Result<mach_p
              Terminal，并在系统提示时允许「开发者工具」权限。"
         }
         SignatureKind::HardenedRuntime => {
-            "当前 WeChat 是官方 Hardened Runtime 签名。请从本机 GUI Terminal \
-             重试，并在「隐私与安全性 → 开发者工具」中允许该 Terminal。只有 SSH \
-             等无 GUI 场景仍被拒绝时，才考虑有副作用的 ad-hoc 重签。"
+            "当前 WeChat 是官方 Hardened Runtime 签名；sudo 和开发者工具权限不保证允许附加。\n\
+             Apple Silicon 微信 4.1.15（270100/270102）可正常退出微信后，\n\
+             以普通用户运行 wx key bootstrap，使用临时副本启动取钥。"
         }
         SignatureKind::Unknown => {
             "请从本机 GUI Terminal 重试，并检查「隐私与安全性 → 开发者工具」权限。"

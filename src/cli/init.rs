@@ -384,7 +384,7 @@ fn drop_privileges_if_sudo() -> Result<()> {
     Ok(())
 }
 
-fn find_or_create_config_path() -> std::path::PathBuf {
+pub(super) fn find_or_create_config_path() -> std::path::PathBuf {
     // 如果当前工作目录或可执行文件目录已有 config.json，沿用它（支持便携模式）
     if let Ok(cwd) = std::env::current_dir() {
         let p = cwd.join("config.json");

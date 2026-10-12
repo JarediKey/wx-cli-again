@@ -1,4 +1,6 @@
 pub mod attachments;
+#[cfg(target_os = "macos")]
+mod bootstrap;
 pub mod biz_articles;
 pub mod contacts;
 pub mod daemon_cmd;
@@ -387,6 +389,16 @@ enum Commands {
 
 #[derive(Subcommand)]
 enum KeyAction {
+    /// 使用临时微信副本启动取钥（Apple Silicon 4.1.15；请先退出微信，无需 sudo）
+    #[cfg(target_os = "macos")]
+    Bootstrap {
+        /// 等待登录和密钥捕获的最长秒数
+        #[arg(long, default_value = "180", value_parser = clap::value_parser!(u64).range(15..=600))]
+        timeout: u64,
+        /// 只检查版本、权限和数据目录，不启动副本
+        #[arg(long)]
+        check: bool,
+    },
     /// 扫描进程内存 / LLDB hook 提取密钥（建议 sudo）
     Extract {
         #[arg(long)]
@@ -638,6 +650,8 @@ fn dispatch(cli: Cli) -> Result<()> {
         Commands::Daemon { cmd } => daemon_cmd::cmd_daemon(cmd),
         Commands::Doctor { json, fix } => doctor::cmd_doctor(json, fix),
         Commands::Key { action } => match action {
+            #[cfg(target_os = "macos")]
+            KeyAction::Bootstrap { timeout, check } => bootstrap::cmd_bootstrap(timeout, check),
             KeyAction::Extract { hook_seconds } => key_cmd::cmd_key_extract(hook_seconds),
             KeyAction::List { json, show_secrets } => key_cmd::cmd_key_list(json, show_secrets),
             KeyAction::Set { db, enc_key } => key_cmd::cmd_key_set(&db, &enc_key),

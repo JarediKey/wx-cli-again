@@ -2,6 +2,8 @@
 
 # wx-cli
 
+[English](README.en.md)
+
 **从命令行查询本地微信数据**
 
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
@@ -45,15 +47,14 @@ npx skills add botiverse/wx-cli -g
 
 ## 安装
 
-> **当前仓库 [botiverse/wx-cli](https://github.com/botiverse/wx-cli) 为 private。**  
-> 匿名 `curl` / 公开 npm 旧包（`@jackwener/wx-cli@0.3.0`）**拿不到**本仓库最新二进制。  
-> 有仓库读权限时，请用下面的 **源码构建**（推荐）。
+> 上游文档中的 [botiverse/wx-cli](https://github.com/botiverse/wx-cli) 为 private；匿名下载和旧 npm 包 `@jackwener/wx-cli@0.3.0` 无法获得其最新二进制。
+> 可以从本 fork `JarediKey/wx-cli-again` 源码构建 0.6.3。本地增加的 macOS bootstrap 适配尚未作为上游版本发布。
 
 ### 从源码构建（推荐）
 
 ```bash
-git clone git@github.com:botiverse/wx-cli.git && cd wx-cli
-cargo build --release
+git clone https://github.com/JarediKey/wx-cli-again.git && cd wx-cli-again
+cargo build --release --locked
 # 安装到用户 PATH（覆盖旧版）
 mkdir -p ~/.local/bin
 cp target/release/wx ~/.local/bin/wx
@@ -63,13 +64,15 @@ wx --version   # 应显示当前 Cargo.toml 版本，如 0.6.3
 Windows：
 
 ```powershell
-git clone git@github.com:botiverse/wx-cli.git
-cd wx-cli
-cargo build --release
+git clone https://github.com/JarediKey/wx-cli-again.git
+cd wx-cli-again
+cargo build --release --locked
 # 将 target\release\wx.exe 放到 PATH 目录
 ```
 
 ### 已有 clone 时升级
+
+先保留本地修改。`origin` 指向本 fork，`upstream` 指向 [jackwener/wx-cli-again](https://github.com/jackwener/wx-cli-again)。同步上游时使用 `git fetch upstream`，审查后合并 `upstream/main`，并保留本 fork 的 bootstrap 适配。
 
 ```bash
 git pull
@@ -120,6 +123,21 @@ curl -fsSL https://raw.githubusercontent.com/botiverse/wx-cli/main/install.sh | 
 
 ## 快速开始
 
+Apple Silicon 上的官方微信 **4.1.15（270100 / 270102）**，推荐显式使用本地新增的临时副本初始化：
+
+```bash
+wx key bootstrap --check
+# 从菜单正常退出微信后，以普通用户运行（不要加 sudo）
+wx key bootstrap --timeout 180
+wx doctor
+wx sessions --json
+```
+
+副本只用于登录时取钥，完成后清理并重新打开原微信。原微信保持官方签名，SIP 保持开启。
+macOS 27.0.1 / 微信 270102 已实测通过 20 个数据库密钥校验、群聊/私聊历史、联系人和搜索。
+权限、临时副本、失败处理及限制见[中文指南](docs/macos-permission-guide.zh.md) / [English guide](docs/macos-permission-guide.md)。
+以下内存扫描流程仅适用于系统允许调试当前微信进程的环境。
+
 ### 新用户要做什么 / 不要做什么
 
 | | macOS 新用户 |
@@ -150,9 +168,9 @@ sudo wx key extract --hook-seconds 90
 
 说明：
 
-- 官方 **Hardened Runtime** 包：本机 Terminal + `sudo` 即可；若失败，到「系统设置 → 隐私与安全性 → 开发者工具」里勾选你的终端。
+- 官方 **Hardened Runtime** 包可能拒绝 `sudo` 和已授权终端的调试请求。支持的 4.1.15 build 可使用上面的 `wx key bootstrap`。
 - 部分官网 4.x 本身已是 **ad-hoc**：用户态 LLDB 往往也能工作。
-- **不要**默认对 WeChat 做 ad-hoc 重签：会打乱 TCC 权限、公众号/截图可能异常。仅当 SSH 等无 GUI 场景下 `task_for_pid` 仍失败时，才考虑有副作用的重签；详见 [macOS 权限指南](docs/macos-permission-guide.md)。
+- **不要**默认对原 WeChat 做 ad-hoc 重签：会打乱 TCC 权限、公众号/截图可能异常。临时副本流程及权限边界见 [macOS 权限指南](docs/macos-permission-guide.zh.md)。
 
 **Linux**
 
@@ -199,7 +217,7 @@ wx key set message/message_1.db <64hex>   # 手动写入并校验
 ```
 
 补密钥统一用 **`sudo wx key extract --hook-seconds 90`**（不要用裸的 `wx init --force` 当主路径）。  
-取钥**不需要关闭 SIP**；需本机 GUI Terminal +（Hardened Runtime 包）sudo。
+两个取钥流程都不会修改 SIP；官方 Hardened Runtime 包可能拒绝 sudo 附加，此时使用已支持 build 的临时副本流程。
 
 ### 消息
 
@@ -403,7 +421,7 @@ daemon 首次解密后将数据库和 mtime 持久化到 `~/.wx-cli/cache/`。�
 
 之后 daemon **优先 SQLCipher 在线打开**加密库（无需全量预解密）；必要时才解密到 `~/.wx-cli/cache/` 并按 mtime / WAL 增量更新。
 
-macOS 取钥依赖本机 Terminal 的 `task_for_pid` / 调试能力，**与是否关闭 SIP 无关**（SIP 保护的是系统组件，不是「能不能读微信内存」的开关）。
+macOS 内存扫描依赖 `task_for_pid` / 调试能力；`bootstrap` 使用单独签名的临时副本在启动时捕获密钥。两个流程都不会修改 SIP；sudo 和开发者工具授权不保证官方应用允许调试。
 
 ---
 
@@ -414,12 +432,14 @@ macOS 取钥依赖本机 Terminal 的 `task_for_pid` / 调试能力，**与是�
 | `meta.unknown_shards` / doctor 缺关键分片 | `sudo wx key extract --hook-seconds 90`，等待时打开相关聊天 |
 | `wx --version` 偏旧 | `git pull && cargo build --release && cp target/release/wx ~/.local/bin/wx` |
 | 是否必须关 SIP？ | **否** |
-| 是否必须 ad-hoc 重签微信？ | **默认否**；仅 SSH/无 GUI 且 attach 失败时考虑 |
+| 是否必须 ad-hoc 重签原微信？ | **否**；支持的 macOS build 可用 `wx key bootstrap`，仅重签临时副本 |
 | daemon 无响应 | `wx daemon stop` 后任意查询会自动重启 |
 
 ---
 
 ## 致谢
+
+本地 bootstrap 的捕获库与 build 权限策略借鉴 [chatlog-keeper](https://github.com/labazhou2024/chatlog-keeper)，MIT 许可保留于 `src/bootstrap/LICENSE.chatlog-keeper`。
 
 本项目受 [ylytdeng/wechat-decrypt](https://github.com/ylytdeng/wechat-decrypt) 启发，在其基础上进行了重新设计与实现。感谢原作者的研究与探索。
 
