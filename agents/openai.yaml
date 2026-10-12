@@ -1,0 +1,4 @@
+interface:
+  display_name: "微信聊天记录"
+  short_description: "查询、搜索、总结微信私聊与群聊，并导出含本地附件的完整聊天档案"
+  default_prompt: "请用 $wx-cli 读取指定微信群过去24小时的消息，总结要点并按需导出完整记录。"

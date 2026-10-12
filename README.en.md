@@ -37,9 +37,11 @@ The fork remote `origin` points to `JarediKey/wx-cli-again`; `upstream` points t
 upstream, run `git fetch upstream`, review and merge `upstream/main`, preserving
 this fork's bootstrap adaptation. To update from the fork, use `git pull`,
 `cargo build --release`, and copy the resulting executable onto PATH. Preserve
-local modifications before pulling. The inherited Agent Skill installation is
-`npx skills add botiverse/wx-cli` (add `-g` for a global installation), which also
-depends on access to that repository. The local `SKILL.md` describes CLI usage.
+local modifications before pulling. Install this fork's Agent Skill with
+`npx skills add JarediKey/wx-cli-again` (add `-g` for a global installation), or
+use Codex's Skill Installer on the repository root. It supports queries, summaries,
+and complete archives with local media. See the [export and Skill guide](docs/chat-export.md)
+for companion dependencies and usage.
 
 ## macOS initialization
 

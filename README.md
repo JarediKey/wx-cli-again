@@ -21,18 +21,20 @@
 通过 [skills CLI](https://github.com/vercel-labs/skills) 一键安装到 Claude Code、Cursor、Codex 等 agent：
 
 ```bash
-npx skills add botiverse/wx-cli
+npx skills add JarediKey/wx-cli-again
 ```
 
 或全局安装：
 
 ```bash
-npx skills add botiverse/wx-cli -g
+npx skills add JarediKey/wx-cli-again -g
 ```
 
 安装后 agent 会自动读取 `SKILL.md`，了解如何安装和调用 wx-cli。
 
-源码与发布仓库：[botiverse/wx-cli](https://github.com/botiverse/wx-cli)。
+Skill 与适配源码：[JarediKey/wx-cli-again](https://github.com/JarediKey/wx-cli-again)。
+
+Skill 支持查询、总结和包含本地附件的完整导出。安装、导出依赖及使用说明见[中文指南](docs/chat-export.zh.md) / [English guide](docs/chat-export.md)。
 
 ---
 
